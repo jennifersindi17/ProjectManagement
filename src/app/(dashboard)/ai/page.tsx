@@ -21,28 +21,7 @@ const aiFeatures = [
 
 const chatMessages = [
   { role: 'user', content: 'Generate a project charter for ERP Implementation at PT ABC' },
-  { role: 'assistant', content: 'I've generated a project charter for ERP Implementation at PT ABC. Here's a summary:
-
-**Project Title:** ERP Implementation - PT ABC
-**Project Manager:** Budi Santoso
-**Start Date:** January 15, 2026
-**End Date:** July 15, 2026
-
-**Objectives:**
-1. Implement Odoo ERP system covering all business modules
-2. Migrate existing data from legacy systems
-3. Train end-users on the new system
-4. Achieve Go-Live by July 2026
-
-**Scope:**
-- Finance & Accounting Module
-- Inventory Management
-- Sales & Procurement
-- Human Resources
-- Manufacturing (Phase 2)
-
-**Budget:** Rp 250,000,000
-**Team Size:** 8 members' },
+  { role: 'assistant', content: "I have generated a project charter for ERP Implementation at PT ABC. Here is a summary:\n\n**Project Title:** ERP Implementation - PT ABC\n**Project Manager:** Budi Santoso\n**Start Date:** January 15, 2026\n**End Date:** July 15, 2026\n\n**Objectives:**\n1. Implement Odoo ERP system covering all business modules\n2. Migrate existing data from legacy systems\n3. Train end-users on the new system\n4. Achieve Go-Live by July 2026\n\n**Scope:**\n- Finance & Accounting Module\n- Inventory Management\n- Sales & Procurement\n- Human Resources\n- Manufacturing (Phase 2)\n\n**Budget:** Rp 250,000,000\n**Team Size:** 8 members" },
 ]
 
 export default function AIAssistantPage() {
@@ -53,7 +32,7 @@ export default function AIAssistantPage() {
 
   const handleSend = () => {
     if (!chatInput.trim()) return
-    setMessages([...messages, { role: 'user', content: chatInput }, { role: 'assistant', content: 'I'm processing your request... This is a demo response. In production, this would connect to OpenAI API to generate intelligent responses based on your project data.' }])
+    setMessages([...messages, { role: 'user', content: chatInput }, { role: 'assistant', content: "I am processing your request. This is a demo response. In production, this would connect to OpenAI API to generate intelligent responses based on your project data." }])
     setChatInput('')
   }
 

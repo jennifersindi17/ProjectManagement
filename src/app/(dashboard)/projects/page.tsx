@@ -1,19 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Search, Filter, MoreVertical, Calendar, Users, DollarSign } from 'lucide-react'
+import { Plus, Search, MoreVertical, Calendar, Users, DollarSign } from 'lucide-react'
 import { cn, formatCurrency, formatDate, getHealthColor, getStatusColor } from '@/lib/utils'
+import { useProjects, type Project } from '@/lib/api'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
-
-const projects = [
-  { id: 1, code: 'PRJ-2026-0001', name: 'ERP Implementation - PT ABC', client: 'PT ABC', type: 'ERP_IMPLEMENTATION', contractValue: 250000000, budget: 250000000, startDate: '2026-01-15', endDate: '2026-07-15', status: 'DEVELOPMENT', health: 'GREEN', progress: 65, pm: 'Budi Santoso', teamSize: 8 },
-  { id: 2, code: 'PRJ-2026-0002', name: 'Digital Transformation - PT XYZ', client: 'PT XYZ', type: 'DIGITAL_TRANSFORMATION', contractValue: 500000000, budget: 480000000, startDate: '2026-02-01', endDate: '2026-08-30', status: 'SIT', health: 'YELLOW', progress: 80, pm: 'Siti Rahayu', teamSize: 12 },
-  { id: 3, code: 'PRJ-2026-0003', name: 'E-Commerce Platform - CV Maju Jaya', client: 'CV Maju Jaya', type: 'SOFTWARE_DEVELOPMENT', contractValue: 150000000, budget: 150000000, startDate: '2026-03-01', endDate: '2026-06-30', status: 'UAT', health: 'GREEN', progress: 90, pm: 'Ahmad Wijaya', teamSize: 6 },
-  { id: 4, code: 'PRJ-2026-0004', name: 'PMO Setup - FIFGROUP', client: 'FIFGROUP', type: 'PMO', contractValue: 100000000, budget: 100000000, startDate: '2026-06-01', endDate: '2026-09-30', status: 'PLANNING', health: 'RED', progress: 15, pm: 'Dewi Lestari', teamSize: 4 },
-  { id: 5, code: 'PRJ-2025-0012', name: 'Manufacturing ERP - PT Industri', client: 'PT Industri', type: 'ERP_IMPLEMENTATION', contractValue: 800000000, budget: 750000000, startDate: '2025-06-01', endDate: '2026-05-31', status: 'SUPPORT', health: 'GREEN', progress: 100, pm: 'Budi Santoso', teamSize: 10 },
-  { id: 6, code: 'PRJ-2025-0008', name: 'HR System - PT Teknologi', client: 'PT Teknologi', type: 'SOFTWARE_DEVELOPMENT', contractValue: 200000000, budget: 200000000, startDate: '2025-04-01', endDate: '2025-12-31', status: 'CLOSED', health: 'GREEN', progress: 100, pm: 'Siti Rahayu', teamSize: 5 },
-]
 
 export default function ProjectsPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -21,10 +13,9 @@ export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState('ALL')
 
-  const filtered = projects.filter(p => {
-    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.client.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchStatus = filterStatus === 'ALL' || p.status === filterStatus
-    return matchSearch && matchStatus
+  const { data: projects, isLoading } = useProjects({
+    status: filterStatus,
+    search: searchQuery || undefined,
   })
 
   return (
@@ -62,50 +53,53 @@ export default function ProjectsPage() {
             </select>
           </div>
 
-          {/* Projects Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((project) => (
-              <div key={project.id} className="card p-5 card-hover cursor-pointer">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs text-muted-foreground font-mono">{project.code}</span>
-                      <span className={cn('badge', getHealthColor(project.health))}>
-                        {project.health}
-                      </span>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+              {(projects || []).map((project: Project & { projectManager?: { name: string }; _count?: { tasks: number; members: number } }) => (
+                <div key={project.id as string} className="card p-5 card-hover cursor-pointer">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-muted-foreground font-mono">{project.code as string}</span>
+                        <span className={cn('badge', getHealthColor(project.health as string))}>
+                          {project.health as string}
+                        </span>
+                      </div>
+                      <h3 className="font-semibold truncate">{project.name as string}</h3>
+                      <p className="text-sm text-muted-foreground">{project.clientName as string}</p>
                     </div>
-                    <h3 className="font-semibold truncate">{project.name}</h3>
-                    <p className="text-sm text-muted-foreground">{project.client}</p>
+                    <button className="p-1 rounded hover:bg-accent"><MoreVertical className="w-4 h-4" /></button>
                   </div>
-                  <button className="p-1 rounded hover:bg-accent"><MoreVertical className="w-4 h-4" /></button>
-                </div>
 
-                <div className="flex items-center gap-2 mb-3">
-                  <span className={cn('badge', getStatusColor(project.status))}>{project.status.replace('_', ' ')}</span>
-                  <span className="badge bg-muted">{project.type.replace('_', ' ')}</span>
-                </div>
-
-                {/* Progress */}
-                <div className="mb-3">
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="font-medium">{project.progress}%</span>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={cn('badge', getStatusColor(project.status as string))}>{String(project.status).replace('_', ' ')}</span>
+                    <span className="badge bg-muted">{String(project.projectType).replace('_', ' ')}</span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${project.progress}%` }} />
+
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">Progress</span>
+                      <span className="font-medium">{project.progress as number}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${project.progress}%` }} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{formatCurrency(Number(project.contractValue))}</div>
+                    <div className="flex items-center gap-1"><Users className="w-3 h-3" />{(project._count as Record<string, number>)?.members || 0} members</div>
+                    <div className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(project.endDate as string)}</div>
+                    <div className="truncate">PM: {(project.projectManager as Record<string, string>)?.name || '-'}</div>
                   </div>
                 </div>
-
-                {/* Meta */}
-                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{formatCurrency(project.contractValue)}</div>
-                  <div className="flex items-center gap-1"><Users className="w-3 h-3" />{project.teamSize} members</div>
-                  <div className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(project.endDate)}</div>
-                  <div className="truncate">PM: {project.pm}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </main>
       </div>
     </div>
