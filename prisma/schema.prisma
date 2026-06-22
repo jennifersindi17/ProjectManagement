@@ -36,20 +36,22 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  managedProjects   Project[]       @relation("ProjectManager")
-  projectMembers    ProjectMember[]
-  assignedTasks     Task[]          @relation("Assignee")
-  reportedTasks     Task[]          @relation("Reporter")
-  timesheets        Timesheet[]
-  meetings          Meeting[]       @relation("MeetingParticipants")
-  meetingHosts      Meeting[]       @relation("MeetingHost")
-  issues            Issue[]         @relation("IssueOwner")
-  risks             Risk[]          @relation("RiskOwner")
-  changeRequests    ChangeRequest[] @relation("CRCreator")
-  notifications     Notification[]
-  comments          Comment[]
-  activityLogs      ActivityLog[]
-  documents         Document[]
+  managedProjects    Project[]       @relation("ProjectManager")
+  projectMembers     ProjectMember[]
+  assignedTasks      Task[]          @relation("Assignee")
+  reportedTasks      Task[]          @relation("Reporter")
+  timesheets         Timesheet[]
+  meetingParticipants MeetingParticipant[]
+  meetingHosts       Meeting[]       @relation("MeetingHost")
+  issues             Issue[]         @relation("IssueOwner")
+  risks              Risk[]          @relation("RiskOwner")
+  changeRequests     ChangeRequest[] @relation("CRCreator")
+  notifications      Notification[]
+  comments           Comment[]
+  activityLogs       ActivityLog[]
+  documents          Document[]
+  refreshTokens      RefreshToken[]
+  client             Client?
 
   @@map("users")
 }
@@ -299,7 +301,7 @@ model MeetingParticipant {
   meetingId  String
   meeting    Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   userId     String
-  user       User    @relation("MeetingParticipants", fields: [userId], references: [id])
+  user       User    @relation(fields: [userId], references: [id])
   attended   Boolean @default(false)
 
   @@map("meeting_participants")
