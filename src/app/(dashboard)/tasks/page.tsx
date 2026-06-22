@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Plus, Search, Calendar } from 'lucide-react'
 import { cn, formatDate, getStatusColor, getPriorityIcon } from '@/lib/utils'
-import { useTasks, type Task } from '@/lib/api'
+import { useTasks } from '@/lib/api'
 import Sidebar from '@/components/layout/Sidebar'
 import Header from '@/components/layout/Header'
 
@@ -19,6 +19,24 @@ export default function TasksPage() {
     priority: filterPriority,
     search: searchQuery || undefined,
   })
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-background">
+        <Sidebar isCollapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} isMobileOpen={mobileMenuOpen} onMobileToggle={() => setMobileMenuOpen(!mobileMenuOpen)} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  const taskList = (tasks || []) as Array<{
+    id: string; taskId: string; name: string; description?: string | null;
+    status: string; priority: string; startDate?: string | null; dueDate?: string | null;
+    progress: number; assignee?: { name: string } | null; reporter?: { name: string };
+    project: { name: string };
+  }>
 
   return (
     <div className="flex h-screen bg-background">
@@ -57,39 +75,33 @@ export default function TasksPage() {
             </select>
           </div>
 
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {(tasks || []).map((task: Task & { assignee?: { name: string } | null; project: { name: string } }) => (
-                <div key={task.id as string} className="card p-4 card-hover cursor-pointer">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      <span className="text-lg">{getPriorityIcon(task.priority as string)}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs text-muted-foreground font-mono">{task.taskId as string}</span>
-                            <span className={cn('badge', getStatusColor(task.status as string))}>{String(task.status).replace('_', ' ')}</span>
-                          </div>
-                          <h3 className="font-medium text-sm">{task.name as string}</h3>
-                          <p className="text-xs text-muted-foreground mt-0.5">{(task.project as Record<string, string>)?.name}</p>
+          <div className="space-y-2">
+            {taskList.map((task) => (
+              <div key={task.id} className="card p-4 card-hover cursor-pointer">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <span className="text-lg">{getPriorityIcon(task.priority)}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-muted-foreground font-mono">{task.taskId}</span>
+                          <span className={cn('badge', getStatusColor(task.status))}>{task.status.replace('_', ' ')}</span>
                         </div>
+                        <h3 className="font-medium text-sm">{task.name}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{task.project.name}</p>
                       </div>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span>Assignee: <span className="text-foreground">{(task.assignee as Record<string, string>)?.name || 'Unassigned'}</span></span>
-                        {task.dueDate && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Due: {formatDate(task.dueDate as string)}</span>}
-                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <span>Assignee: <span className="text-foreground">{task.assignee?.name || 'Unassigned'}</span></span>
+                      {task.dueDate && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Due: {formatDate(task.dueDate)}</span>}
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </main>
       </div>
     </div>
